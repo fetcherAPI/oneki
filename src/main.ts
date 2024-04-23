@@ -4,6 +4,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as cookieParser from 'cookie-parser';
 import * as express from 'express';
 import { join } from 'path';
+import { configPort } from './config.master';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -27,6 +28,6 @@ async function bootstrap() {
   SwaggerModule.setup('swagger', app, doc);
   // Обеспечение статического доступа к папке uploads
   app.use('/uploads', express.static(join(__dirname, '..', 'uploads')));
-  await app.listen(4200);
+  await app.listen(configPort.port);
 }
 bootstrap();
