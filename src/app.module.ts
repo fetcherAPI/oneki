@@ -9,6 +9,7 @@ import { GoalModule } from './goal/goal.module';
 import { PlayerModule } from './player/player.module';
 import { UploadModule } from './upload/upload.module';
 import { GameDayModule } from './game-day/game-day.module';
+import { SeasonModule } from './season/season.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { GameDayModule } from './game-day/game-day.module';
     PlayerModule,
     UploadModule,
     GameDayModule,
+    SeasonModule,
   ],
   controllers: [AppController],
   providers: [AppService],

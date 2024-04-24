@@ -8,10 +8,30 @@ import { CreatePlayerDto } from './dto/create-player.dto';
 import { UpdatePlayerDto } from './dto/update-player.dto';
 import { PrismaService } from 'src/prisma.service';
 import { PlayerDto } from './dto/player.dto';
+import { GoalDto } from './dto/player.dto';
 
 @Injectable()
 export class PlayerService {
   constructor(private prisma: PrismaService) {}
+
+  private goalsCalc = (goals: Array<GoalDto>) => {
+    const uniqueDays = new Set<string>();
+    const goalsCount = goals.reduce((acc, curr) => (acc += curr.count), 0);
+
+    goals.forEach((goal) => {
+      const year = goal.scoredDate.getFullYear();
+      const month = goal.scoredDate.getMonth() + 1;
+      const day = goal.scoredDate.getDate();
+      const formattedDate = `${year}-${month < 10 ? '0' + month : month}-${day < 10 ? '0' + day : day}`;
+      uniqueDays.add(formattedDate);
+    });
+
+    // Избегаем деления на ноль
+
+    return uniqueDays.size > 0
+      ? (goalsCount / uniqueDays.size).toFixed(2)
+      : '0.00';
+  };
 
   async create(dto: CreatePlayerDto, imgUrl: string) {
     const player = await this.prisma.player.findUnique({
@@ -40,6 +60,14 @@ export class PlayerService {
       },
     });
     const playersDto: Array<PlayerDto> = players.map((player) => {
+      const playerGoals = player.goals.map((goal) => {
+        return {
+          scoredDate: goal.scoredDate,
+          forTeam: goal.forTeam.name,
+          vsTeam: goal.toTeam.name,
+          count: goal.count,
+        };
+      });
       return {
         id: player.id,
         createdDate: player.createdAt,
@@ -47,14 +75,16 @@ export class PlayerService {
         name: player.name,
         nickname: player.nickname,
         imagePath: player.imgUrl,
-        goals: player.goals.map((goal) => {
-          return {
-            scoredDate: goal.scoredDate,
-            forTeam: goal.forTeam.name,
-            vsTeam: goal.toTeam.name,
-            count: goal.count,
-          };
-        }),
+        // goals: player.goals.map((goal) => {
+        //   return {
+        //     scoredDate: goal.scoredDate,
+        //     forTeam: goal.forTeam.name,
+        //     vsTeam: goal.toTeam.name,
+        //     count: goal.count,
+        //   };
+        // }),
+        goalsCount: playerGoals.reduce((acc, curr) => (acc += curr.count), 0),
+        goalPercentage: this.goalsCalc(playerGoals),
       };
     });
     return playersDto;
@@ -74,7 +104,14 @@ export class PlayerService {
         },
       },
     });
-
+    const playerGoals = player.goals.map((goal) => {
+      return {
+        scoredDate: goal.scoredDate,
+        forTeam: goal.forTeam.name,
+        vsTeam: goal.toTeam.name,
+        count: goal.count,
+      };
+    });
     const playerDto: PlayerDto = {
       id: player.id,
       createdDate: player.createdAt,
@@ -82,14 +119,9 @@ export class PlayerService {
       name: player.name,
       nickname: player.nickname,
       imagePath: player.imgUrl,
-      goals: player.goals.map((goal) => {
-        return {
-          scoredDate: goal.scoredDate,
-          forTeam: goal.forTeam.name,
-          vsTeam: goal.toTeam.name,
-          count: goal.count,
-        };
-      }),
+      goals: playerGoals,
+      goalPercentage: this.goalsCalc(playerGoals),
+      goalsCount: playerGoals.reduce((acc, curr) => (acc += curr.count), 0),
     };
     return playerDto;
   }

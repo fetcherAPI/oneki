@@ -16,7 +16,7 @@ export class GameDayService {
     return this.prisma.gameDay.findMany();
   }
 
-  async findOne(date: Date) {
+  async findOne(date: string) {
     const year = new Date(date).toISOString().substring(0, 10);
     const gameDay = await this.prisma.gameDay.findFirst({
       where: {

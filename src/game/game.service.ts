@@ -87,4 +87,9 @@ export class GameService {
       },
     });
   }
+
+  async getTeams() {
+    console.log('fdsafds', this.prisma.team.findMany());
+    return await this.prisma.team.findMany();
+  }
 }

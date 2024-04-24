@@ -53,7 +53,7 @@ model Team {
 
 model Game {
   id           String   @id @default(cuid())
-  createdDate  DateTime @map("created_date")
+  createdDate  String   @map("created_date")
   updatedAt    DateTime @updatedAt @map("updated_date")
   firstTeam    Team     @relation("FirstTeamGames", fields: [firstTeamId], references: [id])
   firstTeamId  String   @map("first_team_id")
@@ -80,7 +80,7 @@ model GameDay {
 model Goal {
   id         String   @id @default(cuid())
   scoredDate DateTime @map("scored_date")
-  player     Player   @relation(fields: [playerId], references: [id])
+  player     Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
   playerId   String
   forTeam    Team     @relation("ForTeam", fields: [forTeamId], references: [id])
   forTeamId  String   @map("for_team_id")

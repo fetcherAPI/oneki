@@ -27,10 +27,12 @@ export class PlayerDto {
     ],
   })
   @Type(() => GoalDto)
-  goals: Array<GoalDto>;
+  goals?: Array<GoalDto>;
+  goalsCount?: number;
+  goalPercentage: string;
 }
 
-class GoalDto {
+export class GoalDto {
   @ApiProperty({ default: 'ISODate' })
   scoredDate: Date;
   @ApiProperty({ default: 'for team name' })

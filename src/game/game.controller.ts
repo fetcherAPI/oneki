@@ -26,7 +26,10 @@ export class GameController {
     private readonly goalService: GoalService,
     private readonly gameDayService: GameDayService,
   ) {}
-
+  @Get('teams')
+  async getTeams() {
+    return await this.gameService.getTeams();
+  }
   @Post()
   @Auth()
   @ApiBearerAuth()
@@ -42,7 +45,7 @@ export class GameController {
     try {
       const goals1Promises = dto.goals1.map((el) =>
         this.goalService.create({
-          scoredDate: game.createdDate,
+          scoredDate: new Date(game.createdDate),
           playerId: el.playerId,
           forTeamId: dto.firstTeamId,
           toTeamId: dto.secondTeamId,
@@ -52,7 +55,7 @@ export class GameController {
       );
       const goals2Promises = dto.goals2.map((el) =>
         this.goalService.create({
-          scoredDate: game.createdDate,
+          scoredDate: new Date(game.createdDate),
           playerId: el.playerId,
           forTeamId: dto.secondTeamId,
           toTeamId: dto.firstTeamId,
@@ -86,7 +89,7 @@ export class GameController {
     await this.goalService.deleteAllGoalsByGameId(id);
     const goals1Promises = dto.goals1.map((el) =>
       this.goalService.create({
-        scoredDate: game.createdDate,
+        scoredDate: new Date(game.createdDate),
         playerId: el.playerId,
         forTeamId: dto.firstTeamId,
         toTeamId: dto.secondTeamId,
@@ -96,7 +99,7 @@ export class GameController {
     );
     const goals2Promises = dto.goals2.map((el) =>
       this.goalService.create({
-        scoredDate: game.createdDate,
+        scoredDate: new Date(game.createdDate),
         playerId: el.playerId,
         forTeamId: dto.secondTeamId,
         toTeamId: dto.firstTeamId,

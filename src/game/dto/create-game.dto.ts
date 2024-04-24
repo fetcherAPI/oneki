@@ -5,7 +5,7 @@ import { IsArray, IsNotEmpty, ValidateNested } from 'class-validator';
 export class CreateGameDto {
   @ApiProperty({ default: '2024-03-28T11:23:42.000Z', description: 'required' })
   @IsNotEmpty({ message: 'createdDate не должен быть пустым' })
-  createdDate: Date;
+  createdDate: string;
   @ApiProperty({ default: 'uuid', description: 'required' })
   @IsNotEmpty({ message: 'firstTeamId не должен быть пустым' })
   firstTeamId: string;
