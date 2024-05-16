@@ -11,12 +11,13 @@ import {
   Put,
 } from '@nestjs/common';
 import { GameService } from './game.service';
-import { CreateGameDto } from './dto/create-game.dto';
+import { CreateGameDto, GoalDto } from './dto/create-game.dto';
 import { UpdateGameDto } from './dto/update-game.dto';
 import { GoalService } from 'src/goal/goal.service';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { GameDayService } from 'src/game-day/game-day.service';
 import { Auth } from 'src/auth/decorators/auth.decorator';
+import { Game } from '@prisma/client';
 
 @Controller('game')
 @ApiTags('game')
@@ -43,37 +44,13 @@ export class GameController {
       gameDayId,
     });
     try {
-      const goals1Promises = dto.goals1.map((el) =>
-        this.goalService.create({
-          scoredDate: new Date(game.createdDate),
-          playerId: el.playerId,
-          forTeamId: dto.firstTeamId,
-          toTeamId: dto.secondTeamId,
-          gameId: game.id,
-          count: el.count,
-        }),
-      );
-      const goals2Promises = dto.goals2.map((el) =>
-        this.goalService.create({
-          scoredDate: new Date(game.createdDate),
-          playerId: el.playerId,
-          forTeamId: dto.secondTeamId,
-          toTeamId: dto.firstTeamId,
-          gameId: game.id,
-          count: el.count,
-        }),
-      );
-      await Promise.all([...goals1Promises, ...goals2Promises]);
+      await this.createGoal(game, dto.goals1, dto.firstTeamId, dto.secondTeamId);
+      await this.createGoal(game, dto.goals2, dto.secondTeamId, dto.firstTeamId);
       return game;
     } catch (err) {
       throw new UnprocessableEntityException('Error while goals');
     }
   }
-
-  // @Get('gameResults')
-  // findAll() {
-  //   return this.gameService.findAll();
-  // }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
@@ -86,30 +63,13 @@ export class GameController {
   @UsePipes(new ValidationPipe())
   async update(@Param('id') id: string, @Body() dto: UpdateGameDto) {
     const game = await this.gameService.findOne(id);
+
     await this.goalService.deleteAllGoalsByGameId(id);
 
-    const goals1Promises = dto.goals1.map((el) =>
-      this.goalService.create({
-        scoredDate: new Date(game.createdDate),
-        playerId: el.playerId,
-        forTeamId: dto.firstTeamId,
-        toTeamId: dto.secondTeamId,
-        gameId: game.id,
-        count: el.count,
-      }),
-    );
-    const goals2Promises = dto.goals2.map((el) =>
-      this.goalService.create({
-        scoredDate: new Date(game.createdDate),
-        playerId: el.playerId,
-        forTeamId: dto.secondTeamId,
-        toTeamId: dto.firstTeamId,
-        gameId: game.id,
-        count: el.count,
-      }),
-    );
+    await this.createGoal(game, dto.goals1, dto.firstTeamId, dto.secondTeamId);
 
-    await Promise.all([...goals1Promises, ...goals2Promises]);
+    await this.createGoal(game, dto.goals2, dto.secondTeamId, dto.firstTeamId);
+
     return this.gameService.update(id, dto);
   }
 
@@ -118,5 +78,18 @@ export class GameController {
   @Auth()
   remove(@Param('id') id: string) {
     return this.gameService.remove(id);
+  }
+
+  private async createGoal(game: Game, goals: Array<GoalDto>, forTeamId: string, toTeamId: string) {
+    goals.map((el) => {
+      return this.goalService.create({
+        scoredDate: new Date(game.createdDate),
+        playerId: el.playerId,
+        forTeamId,
+        toTeamId,
+        gameId: game.id,
+        count: el.count,
+      });
+    });
   }
 }
