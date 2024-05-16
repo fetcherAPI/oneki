@@ -16,9 +16,9 @@ export class GameService {
 
   create(createGameDto: ICreateGame) {
     const { dto, goals1, goals2, gameDayId } = createGameDto;
-    const fTeamGCount = goals1.reduce((acc, curr) => (acc += curr.count), 0);
 
-    const sTeamGCount = goals2.reduce((acc, curr) => (acc += curr.count), 0);
+    const fTeamGCount = this.calcGoalCount(goals1);
+    const sTeamGCount = this.calcGoalCount(goals2);
 
     const game = {
       createdDate: dto.createdDate,
@@ -58,15 +58,9 @@ export class GameService {
   }
 
   update(id: string, dto: UpdateGameDto) {
-    const fTeamGcount = dto.goals1.reduce(
-      (acc, curr) => (acc += curr.count),
-      0,
-    );
+    const fTeamGcount = this.calcGoalCount(dto.goals1);
+    const sTeamGcount = this.calcGoalCount(dto.goals2);
 
-    const sTeamGcount = dto.goals2.reduce(
-      (acc, curr) => (acc += curr.count),
-      0,
-    );
     return this.prisma.game.update({
       where: {
         id,
@@ -80,7 +74,7 @@ export class GameService {
     });
   }
 
-  remove(id: string) {
+  async remove(id: string) {
     return this.prisma.game.delete({
       where: {
         id,
@@ -89,7 +83,10 @@ export class GameService {
   }
 
   async getTeams() {
-    console.log('fdsafds', this.prisma.team.findMany());
     return await this.prisma.team.findMany();
   }
+
+  private calcGoalCount = (goals: GoalDto[]) => {
+    return goals.reduce((acc, curr) => (acc += curr.count), 0);
+  };
 }
