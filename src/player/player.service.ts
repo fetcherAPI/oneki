@@ -119,7 +119,13 @@ export class PlayerService {
       name: player.name,
       nickname: player.nickname,
       imagePath: player.imgUrl,
-      goals: playerGoals,
+      goals: playerGoals.sort((a, b) => {
+        return a.scoredDate > b.scoredDate
+          ? -1
+          : a.scoredDate < b.scoredDate
+            ? 1
+            : 0;
+      }),
       goalPercentage: this.goalsCalc(playerGoals),
       goalsCount: playerGoals.reduce((acc, curr) => (acc += curr.count), 0),
     };

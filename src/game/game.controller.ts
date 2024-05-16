@@ -87,6 +87,7 @@ export class GameController {
   async update(@Param('id') id: string, @Body() dto: UpdateGameDto) {
     const game = await this.gameService.findOne(id);
     await this.goalService.deleteAllGoalsByGameId(id);
+
     const goals1Promises = dto.goals1.map((el) =>
       this.goalService.create({
         scoredDate: new Date(game.createdDate),
@@ -107,6 +108,7 @@ export class GameController {
         count: el.count,
       }),
     );
+
     await Promise.all([...goals1Promises, ...goals2Promises]);
     return this.gameService.update(id, dto);
   }

@@ -14,3 +14,9 @@ export class AuthDto {
   @ApiProperty({ default: '1234576' })
   password: string;
 }
+
+export class RefreshTokenDto {
+  @ApiProperty()
+  @IsNotEmpty()
+  refreshToken: string;
+}

@@ -10,7 +10,7 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { AuthDto } from './dto/auth.dto';
+import { AuthDto, RefreshTokenDto } from './dto/auth.dto';
 import { Request, Response } from 'express';
 
 @Controller('auth')
@@ -21,8 +21,9 @@ export class AuthController {
   @HttpCode(200)
   @Post('login')
   async login(@Body() dto: AuthDto, @Res({ passthrough: true }) res: Response) {
-    const { refreshToken, ...response } = await this.authService.login(dto);
-    this.authService.addRefreshTokenToResponse(res, refreshToken);
+    const response = await this.authService.login(dto);
+    // console.log('refreshToken', refreshToken);
+    // this.authService.addRefreshTokenToResponse(res, refreshToken);
     return response;
   }
 
@@ -40,18 +41,21 @@ export class AuthController {
   async refreshTokens(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
+    @Body() dto: RefreshTokenDto,
   ) {
-    const refreshTokenFromCookie =
-      req.cookies[this.authService.REFRESH_TOKEN_NAME];
+    // const refreshTokenFromCookie =
+    //   req.cookies[this.authService.REFRESH_TOKEN_NAME];
 
-    if (!refreshTokenFromCookie) {
+    // console.log('refreshTokenFromCookie', refreshTokenFromCookie);
+
+    const { refreshToken } = dto;
+
+    if (!refreshToken) {
       this.authService.removeRefreshTokenToResponse(res);
       throw new UnauthorizedException('refresh token not passed');
     }
 
-    const { refreshToken, ...response } = await this.authService.refreshTokens(
-      refreshTokenFromCookie,
-    );
+    const response = await this.authService.refreshTokens(refreshToken);
     this.authService.addRefreshTokenToResponse(res, refreshToken);
     return response;
   }

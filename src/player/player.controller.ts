@@ -58,8 +58,10 @@ export class PlayerController {
       createPlayerDto: string;
     },
   ) {
+    console.log('createPlayerDto', body.createPlayerDto);
     const { nickname, name, id, birthDate } = JSON.parse(body.createPlayerDto);
-    const fileUrl = `/uploads/${file.filename}`;
+
+    const fileUrl = file ? `/uploads/${file?.filename}` : '';
     if (id) {
       return await this.playerService.update(id, {
         name,

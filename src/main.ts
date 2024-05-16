@@ -25,6 +25,7 @@ async function bootstrap() {
     .build();
   const doc = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('swagger', app, doc);
+
   // Обеспечение статического доступа к папке uploads
   app.use('/uploads', express.static(join(__dirname, '..', 'uploads')));
   await app.listen(4200);

@@ -72,12 +72,13 @@ export class AuthService {
 
   addRefreshTokenToResponse(res: Response, refreshToken: string) {
     const expiresIn = new Date();
+    console.log('refreshToken', refreshToken);
 
     expiresIn.setDate(expiresIn.getDate() + this.EXPIRE_DAY_REFRESH_TOKEN);
 
     res.cookie(this.REFRESH_TOKEN_NAME, refreshToken, {
       httpOnly: true,
-      domain: 'localhost',
+      domain: 'http://10.100.4.156/',
       expires: expiresIn,
       secure: true,
       sameSite: 'none',
@@ -91,7 +92,7 @@ export class AuthService {
 
     res.cookie(this.REFRESH_TOKEN_NAME, '', {
       httpOnly: true,
-      domain: 'localhost',
+      domain: 'http://10.100.4.156/',
       expires: new Date(0),
       secure: true,
       sameSite: 'none',
@@ -99,15 +100,19 @@ export class AuthService {
   }
 
   async refreshTokens(refreshToken: string) {
-    const result = await this.jwt.verifyAsync(refreshToken);
-    if (!result) throw new UnauthorizedException('Invalid refresh token');
+    try {
+      const result = await this.jwt.verifyAsync(refreshToken);
+      if (!result) throw new UnauthorizedException('Invalid refresh token');
 
-    const { password, ...user } = await this.userService.getById(result.id);
+      const { password, ...user } = await this.userService.getById(result.id);
 
-    const tokens = this.issueTokens(user.id);
-    return {
-      user,
-      ...tokens,
-    };
+      const tokens = this.issueTokens(user.id);
+      return {
+        user,
+        ...tokens,
+      };
+    } catch (err) {
+      throw new UnauthorizedException('invalid token ');
+    }
   }
 }
