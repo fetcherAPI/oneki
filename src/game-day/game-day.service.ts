@@ -26,8 +26,7 @@ export class GameDayService {
     if (gameDay) {
       return gameDay.id;
     } else {
-      return (await this.prisma.gameDay.create({ data: { createdDate: year } }))
-        .id;
+      return (await this.prisma.gameDay.create({ data: { createdDate: year } })).id;
     }
   }
 
@@ -90,6 +89,17 @@ export class GameDayService {
   }
   update(id: number, updateGameDayDto: UpdateGameDayDto) {
     return `This action updates a #${id} gameDay`;
+  }
+
+  findBetweenDates(start, end) {
+    return this.prisma.gameDay.findMany({
+      where: {
+        createdDate: {
+          gte: new Date(start).toISOString(),
+          lte: new Date(end).toISOString(),
+        },
+      },
+    });
   }
 
   remove(id: string) {

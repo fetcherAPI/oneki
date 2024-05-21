@@ -94,3 +94,12 @@ model Goal {
 
   @@map("goal")
 }
+
+model Season {
+  id          String   @id @default(cuid())
+  startDate   DateTime @map("stared_date")
+  expiredDate DateTime @map("expired_date")
+  name        String
+
+  @@map("season")
+}

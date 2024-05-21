@@ -4,6 +4,11 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as cookieParser from 'cookie-parser';
 import * as express from 'express';
 import { join } from 'path';
+import * as dayjs from 'dayjs';
+import 'dayjs/locale/ru'; // Импорт локализации
+
+// Установка локализации глобально
+dayjs.locale('ru');
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
