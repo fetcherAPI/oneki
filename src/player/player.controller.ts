@@ -1,3 +1,4 @@
+import { Player } from './entities/player.entity';
 import {
   Controller,
   Get,
@@ -12,14 +13,11 @@ import {
 import { PlayerService } from './player.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
-import {
-  ApiBearerAuth,
-  ApiOkResponse,
-  ApiOperation,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { PlayerDto } from './dto/player.dto';
 import { Auth } from 'src/auth/decorators/auth.decorator';
+import { Request } from 'express';
+import { sendMessageToTelegram } from 'src/coinfig/telegram.config';
 
 @Controller('player')
 @ApiTags('player')
@@ -93,8 +91,13 @@ export class PlayerController {
   @ApiOkResponse({
     type: PlayerDto,
   })
-  findOne(@Param('id') id: string) {
-    return this.playerService.findOne(id);
+  async findOne(@Param('id') id: string, @Req() req: Request) {
+    const clienIp = req.ip;
+    const player = await this.playerService.findOne(id);
+    await sendMessageToTelegram(
+      `Ктото запросил детальные данные игрока - ${clienIp}, ${player.name}`,
+    );
+    return player;
   }
 
   // @Patch(':id')
