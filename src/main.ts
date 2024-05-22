@@ -18,9 +18,7 @@ async function bootstrap() {
     cert: fs.readFileSync('./src/sertificateSSL/fullchain.pem'),
   };
 
-  const app = await NestFactory.create(AppModule, {
-    httpsOptions,
-  });
+  const app = await NestFactory.create(AppModule, {});
 
   app.setGlobalPrefix('api');
 
