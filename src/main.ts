@@ -4,6 +4,8 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as cookieParser from 'cookie-parser';
 import * as express from 'express';
 import { join } from 'path';
+import * as fs from 'fs';
+
 import * as dayjs from 'dayjs';
 import 'dayjs/locale/ru'; // Импорт локализации
 
@@ -11,7 +13,14 @@ import 'dayjs/locale/ru'; // Импорт локализации
 dayjs.locale('ru');
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const httpsOptions = {
+    key: fs.readFileSync('./src/sertificateSSL/privkey.pem'),
+    cert: fs.readFileSync('./src/sertificateSSL/fullchain.pem'),
+  };
+
+  const app = await NestFactory.create(AppModule, {
+    httpsOptions,
+  });
 
   app.setGlobalPrefix('api');
 
