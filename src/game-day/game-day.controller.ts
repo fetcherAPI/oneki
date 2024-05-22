@@ -1,13 +1,10 @@
-import { Controller, Delete, Get, Param } from '@nestjs/common';
+import { Controller, Delete, Get, Param, Req } from '@nestjs/common';
 import { GameDayService } from './game-day.service';
-import {
-  ApiBearerAuth,
-  ApiOkResponse,
-  ApiProperty,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOkResponse, ApiProperty, ApiTags } from '@nestjs/swagger';
 import { GameDayDto } from './dto/game-day.dto';
 import { Auth } from 'src/auth/decorators/auth.decorator';
+import { Request } from 'express';
+import { sendMessageToTelegram } from 'src/coinfig/telegram.config';
 class GameDay {
   @ApiProperty({
     example: '1',
@@ -48,7 +45,8 @@ export class GameDayController {
     type: GameDayDto,
   })
   @Get(':id')
-  async findOne(@Param('id') id: string) {
+  async findOne(@Param('id') id: string, @Req() req: Request) {
+    await sendMessageToTelegram(`Ктото запросил: [${req.ip}] игровой день ${id}`);
     return await this.gameDayService.getById(id);
   }
 

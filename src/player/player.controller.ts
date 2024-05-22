@@ -83,7 +83,8 @@ export class PlayerController {
     type: PlayerDto,
     isArray: true,
   })
-  findAll() {
+  async findAll(@Req() req: Request) {
+    await sendMessageToTelegram(`Ктото запросил список игроков - ${req.ip},`);
     return this.playerService.findAll();
   }
 
