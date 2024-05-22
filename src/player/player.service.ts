@@ -1,9 +1,4 @@
-import {
-  HttpException,
-  HttpStatus,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { CreatePlayerDto } from './dto/create-player.dto';
 import { UpdatePlayerDto } from './dto/update-player.dto';
 import { PrismaService } from 'src/prisma.service';
@@ -28,9 +23,7 @@ export class PlayerService {
 
     // Избегаем деления на ноль
 
-    return uniqueDays.size > 0
-      ? (goalsCount / uniqueDays.size).toFixed(2)
-      : '0.00';
+    return uniqueDays.size > 0 ? (goalsCount / uniqueDays.size).toFixed(2) : '0.00';
   };
 
   async create(dto: CreatePlayerDto, imgUrl: string) {
@@ -40,10 +33,7 @@ export class PlayerService {
       },
     });
     if (player) {
-      throw new HttpException(
-        'already exist user with this nick ',
-        HttpStatus.CONFLICT,
-      );
+      throw new HttpException('already exist user with this nick ', HttpStatus.CONFLICT);
     }
     return this.prisma.player.create({ data: { ...dto, imgUrl } });
   }
@@ -75,14 +65,6 @@ export class PlayerService {
         name: player.name,
         nickname: player.nickname,
         imagePath: player.imgUrl,
-        // goals: player.goals.map((goal) => {
-        //   return {
-        //     scoredDate: goal.scoredDate,
-        //     forTeam: goal.forTeam.name,
-        //     vsTeam: goal.toTeam.name,
-        //     count: goal.count,
-        //   };
-        // }),
         goalsCount: playerGoals.reduce((acc, curr) => (acc += curr.count), 0),
         goalPercentage: this.goalsCalc(playerGoals),
       };
@@ -120,11 +102,7 @@ export class PlayerService {
       nickname: player.nickname,
       imagePath: player.imgUrl,
       goals: playerGoals.sort((a, b) => {
-        return a.scoredDate > b.scoredDate
-          ? -1
-          : a.scoredDate < b.scoredDate
-            ? 1
-            : 0;
+        return a.scoredDate > b.scoredDate ? -1 : a.scoredDate < b.scoredDate ? 1 : 0;
       }),
       goalPercentage: this.goalsCalc(playerGoals),
       goalsCount: playerGoals.reduce((acc, curr) => (acc += curr.count), 0),
@@ -160,5 +138,46 @@ export class PlayerService {
         id,
       },
     });
+  }
+
+  async findBetweenDates(start, end) {
+    const players = await this.prisma.player.findMany({
+      include: {
+        goals: {
+          include: {
+            forTeam: true,
+            toTeam: true,
+          },
+          where: {
+            scoredDate: {
+              gte: new Date(start).toISOString(),
+              lte: new Date(end).toISOString(),
+            },
+          },
+        },
+      },
+    });
+
+    const playersDto: Array<PlayerDto> = players.map((player) => {
+      const playerGoals = player.goals.map((goal) => {
+        return {
+          scoredDate: goal.scoredDate,
+          forTeam: goal.forTeam.name,
+          vsTeam: goal.toTeam.name,
+          count: goal.count,
+        };
+      });
+      return {
+        id: player.id,
+        createdDate: player.createdAt,
+        updatedDate: player.updatedAt,
+        name: player.name,
+        nickname: player.nickname,
+        imagePath: player.imgUrl,
+        goalsCount: playerGoals.reduce((acc, curr) => (acc += curr.count), 0),
+        goalPercentage: this.goalsCalc(playerGoals),
+      };
+    });
+    return playersDto;
   }
 }

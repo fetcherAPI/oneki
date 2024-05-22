@@ -5,12 +5,14 @@ import { PrismaService } from 'src/prisma.service';
 import { GameDayService } from 'src/game-day/game-day.service';
 import * as dayjs from 'dayjs';
 import 'dayjs/locale/ru';
+import { PlayerService } from 'src/player/player.service';
 
 @Injectable()
 export class SeasonService {
   constructor(
     private prisma: PrismaService,
     private gameDay: GameDayService,
+    private player: PlayerService,
   ) {}
   create(dto: CreateSeasonDto) {
     const { name } = dto;
@@ -32,6 +34,12 @@ export class SeasonService {
     const season = await this.prisma.season.findUnique({ where: { id } });
     const gameDays = await this.gameDay.findBetweenDates(season.startDate, season.expiredDate);
     return gameDays;
+  }
+
+  async findSeasonPlayers(id: string) {
+    const season = await this.prisma.season.findUnique({ where: { id } });
+    const players = await this.player.findBetweenDates(season.startDate, season.expiredDate);
+    return players;
   }
 
   update(id: string, dto: UpdateSeasonDto) {

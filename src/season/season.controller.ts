@@ -35,6 +35,11 @@ export class SeasonController {
     return this.seasonService.findOne(id);
   }
 
+  @Get('players/:id')
+  players(@Param('id') id: string) {
+    return this.seasonService.findSeasonPlayers(id);
+  }
+
   @Patch(':id')
   update(@Param('id') id: string, @Body() dto: UpdateSeasonDto) {
     return this.seasonService.update(id, dto);
