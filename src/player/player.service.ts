@@ -242,7 +242,7 @@ export class PlayerService {
     });
 
     return {
-        players:  sortedPlayerChartData.slice(0, 10),
+        players:  sortedPlayerChartData.slice(0, 5),
         dates: dates.map(el => el.createdDate),
     }
 
