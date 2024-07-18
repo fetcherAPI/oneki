@@ -88,6 +88,15 @@ export class PlayerController {
     return this.playerService.findAll();
   }
 
+  @Get('chart')
+  @ApiOkResponse({
+    type: PlayerDto,
+    isArray: true,
+  })
+  async chart(@Req() req: Request) {
+    // await sendMessageToTelegram(`Ктото запросил список игроков - ${req.ip},`);
+    return this.playerService.playersChart();
+  }
   @Get(':id')
   @ApiOkResponse({
     type: PlayerDto,

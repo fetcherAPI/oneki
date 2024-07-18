@@ -9,6 +9,8 @@ import {
   ValidationPipe,
   UnprocessableEntityException,
   Put,
+  NotFoundException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { GameService } from './game.service';
 import { CreateGameDto, GoalDto } from './dto/create-game.dto';
@@ -64,13 +66,18 @@ export class GameController {
   async update(@Param('id') id: string, @Body() dto: UpdateGameDto) {
     const game = await this.gameService.findOne(id);
 
+    if (!game) throw new NotFoundException();
+
     await this.goalService.deleteAllGoalsByGameId(id);
+    try {
+      await this.createGoal(game, dto.goals1, dto.firstTeamId, dto.secondTeamId);
 
-    await this.createGoal(game, dto.goals1, dto.firstTeamId, dto.secondTeamId);
+      await this.createGoal(game, dto.goals2, dto.secondTeamId, dto.firstTeamId);
 
-    await this.createGoal(game, dto.goals2, dto.secondTeamId, dto.firstTeamId);
-
-    return this.gameService.update(id, dto);
+      return this.gameService.update(id, dto);
+    } catch (err) {
+      throw new InternalServerErrorException();
+    }
   }
 
   @Delete(':id')

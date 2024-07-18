@@ -40,6 +40,11 @@ export class GameDayController {
     return await this.gameDayService.findAll();
   }
 
+  @Get('last')
+  async getLastGameDate() {
+    return await this.gameDayService.getLastGameDate();
+  }
+
   @ApiOkResponse({
     description: 'array of game days date',
     type: GameDayDto,

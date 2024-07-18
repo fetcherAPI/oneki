@@ -8,12 +8,13 @@ export class GoalService {
 
   async create(dto: CreateGoalDto) {
     try {
+      console.log('dto', dto);
       return await this.prisma.goal.create({
         data: dto,
       });
     } catch (error) {
       console.log('error', error);
-      throw new Error('Server error occurred while creating a goal.');
+      throw new Error(error);
     }
   }
 
@@ -29,6 +30,17 @@ export class GoalService {
     } catch (error) {
       throw Error('Can not delete goals');
     }
+  }
+
+  async goalsByDate(date: string, playerId: string) {
+    const goals = await this.prisma.goal.findMany({
+      where: {
+        playerId,
+        scoredDate: new Date(date).toISOString()
+      }
+    })
+
+    return goals.length
   }
 
   // isValidISO8601(dateString: string): boolean {

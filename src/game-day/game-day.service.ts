@@ -8,8 +8,7 @@ import { GameDayDto } from './dto/game-day.dto';
 export class GameDayService {
   constructor(private prisma: PrismaService) {}
   create(createGameDayDto: CreateGameDayDto) {
-    const gameDay = this.prisma.gameDay.create({ data: createGameDayDto });
-    return gameDay;
+    return this.prisma.gameDay.create({ data: createGameDayDto });
   }
 
   findAll() {
@@ -98,6 +97,14 @@ export class GameDayService {
           gte: new Date(start).toISOString(),
           lte: new Date(end).toISOString(),
         },
+      },
+    });
+  }
+
+  getLastGameDate() {
+    return this.prisma.gameDay.findFirst({
+      orderBy: {
+        createdDate: 'desc',
       },
     });
   }

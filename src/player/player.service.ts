@@ -4,10 +4,17 @@ import { UpdatePlayerDto } from './dto/update-player.dto';
 import { PrismaService } from 'src/prisma.service';
 import { PlayerDto } from './dto/player.dto';
 import { GoalDto } from './dto/player.dto';
+import { GameDayService } from 'src/game-day/game-day.service';
+import { ChartDto, PlayerChartDto } from './dto/chart.dto';
+import { GoalService } from 'src/goal/goal.service';
 
 @Injectable()
 export class PlayerService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private gameDay: GameDayService,
+    private goal: GoalService
+  ) {}
 
   private goalsCalc = (goals: Array<GoalDto>) => {
     const uniqueDays = new Set<string>();
@@ -24,6 +31,20 @@ export class PlayerService {
     // Избегаем деления на ноль
 
     return uniqueDays.size > 0 ? (goalsCount / uniqueDays.size).toFixed(2) : '0.00';
+  };
+  private getLastGameDate = async () => {
+    return new Date((await this.gameDay.getLastGameDate()).createdDate);
+  };
+
+  private filterByScoredDate = async (elements: Array<GoalDto>) => {
+    const results = await Promise.all(
+      elements.map(async (el) => {
+        const lastGameDate = await this.getLastGameDate();
+        return { element: el, isValid: el.scoredDate >= lastGameDate };
+      }),
+    );
+
+    return results.filter((result) => result.isValid).map((result) => result.element);
   };
 
   async create(dto: CreatePlayerDto, imgUrl: string) {
@@ -49,6 +70,7 @@ export class PlayerService {
         },
       },
     });
+
     const playersDto: Array<PlayerDto> = players.map((player) => {
       const playerGoals = player.goals.map((goal) => {
         return {
@@ -58,6 +80,7 @@ export class PlayerService {
           count: goal.count,
         };
       });
+
       return {
         id: player.id,
         createdDate: player.createdAt,
@@ -67,6 +90,7 @@ export class PlayerService {
         imagePath: player.imgUrl,
         goalsCount: playerGoals.reduce((acc, curr) => (acc += curr.count), 0),
         goalPercentage: this.goalsCalc(playerGoals),
+        lastGameDayGoalCount: this.filterByScoredDate(playerGoals).then((res) => res),
       };
     });
     return playersDto;
@@ -158,6 +182,7 @@ export class PlayerService {
       },
     });
 
+    const lastGameDay = await this.gameDay.getLastGameDate();
     const playersDto: Array<PlayerDto> = players.map((player) => {
       const playerGoals = player.goals.map((goal) => {
         return {
@@ -176,8 +201,42 @@ export class PlayerService {
         imagePath: player.imgUrl,
         goalsCount: playerGoals.reduce((acc, curr) => (acc += curr.count), 0),
         goalPercentage: this.goalsCalc(playerGoals),
+        lastGameDayGoalCount: playerGoals
+          .filter(async (el) => el.scoredDate >= (await this.getLastGameDate()))
+          .reduce((acc, curr) => (acc += curr.count), 0),
       };
     });
     return playersDto;
+  }
+
+
+  async playersChart ()  {
+    const dates = await this.gameDay.findAll()
+    const players = await this.findAll()
+
+    const chart: Array<any> =[]
+
+    for (const player of players) {
+
+      const promises = dates.map(date => {
+        return this.goal.goalsByDate(date.createdDate, player.id);
+      });
+
+      const results   = await Promise.all(promises);
+
+
+      const playerChartData: PlayerChartDto = {
+        name: player.name,
+        goals: results.flat()
+      }
+        chart.push(playerChartData)
+    }
+
+
+    return {
+        players:  chart,
+        dates: dates.map(el => el.createdDate),
+    }
+
   }
 }

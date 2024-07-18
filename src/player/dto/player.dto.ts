@@ -29,6 +29,7 @@ export class PlayerDto {
   @Type(() => GoalDto)
   goals?: Array<GoalDto>;
   goalsCount?: number;
+  lastGameDayGoalCount?: any;
   goalPercentage: string;
 }
 
