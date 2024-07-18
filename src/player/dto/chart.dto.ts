@@ -10,6 +10,7 @@ export class ChartDto {
 
 export class PlayerChartDto {
   name: string
+  img: string
   goals?: Array<number>;
 }
 

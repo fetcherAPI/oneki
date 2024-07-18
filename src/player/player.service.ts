@@ -8,6 +8,8 @@ import { GameDayService } from 'src/game-day/game-day.service';
 import { ChartDto, PlayerChartDto } from './dto/chart.dto';
 import { GoalService } from 'src/goal/goal.service';
 
+const cols = ['green', 'yellow', 'red', 'black' , 'blue']
+
 @Injectable()
 export class PlayerService {
   constructor(
@@ -227,14 +229,20 @@ export class PlayerService {
 
       const playerChartData: PlayerChartDto = {
         name: player.name,
+        img: player.imagePath,
         goals: results.flat()
       }
         chart.push(playerChartData)
     }
 
+    const sortedPlayerChartData = chart.sort((a, b) => {
+      const totalGoalsA = a.goals.reduce((acc, goal) => acc + goal, 0);
+      const totalGoalsB = b.goals.reduce((acc, goal) => acc + goal, 0);
+      return totalGoalsB - totalGoalsA; // Сортировка по убыванию
+    });
 
     return {
-        players:  chart,
+        players:  sortedPlayerChartData.slice(0, 10),
         dates: dates.map(el => el.createdDate),
     }
 
